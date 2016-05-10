@@ -9,21 +9,39 @@
 import UIKit
 import MapKit
 
-class TravelMapViewController: UIViewController {
+@objc protocol TravelMapProtocol{
+    func appToBackground()
+}
+
+class TravelMapViewController: UIViewController, MKMapViewDelegate {
 
     struct Constants{
         static let MapCenterLatitudeKey = "MapCenterLatitude"
         static let MapCenterLongitudeKey = "MapCenterLongitude"
         static let MapCenterLatDeltaKey = "MapLatitudeDelta"
         static let MapCenterLongDeltaKey = "MapLongitudeDelta"
+        static let PinReuseIdentifier = "Pin"
     }
     
     
-    @IBOutlet var mapView: MKMapView!
+    @IBAction func mapHeld(sender: UILongPressGestureRecognizer) {
+        
+        let point = sender.locationOfTouch(0, inView:mapView)
+        let coordinate = mapView.convertPoint(point, toCoordinateFromView: mapView)
+        let annotation = MKPointAnnotation()
+        annotation.coordinate = coordinate
+        mapView.addAnnotation(annotation)
+    }
+    @IBOutlet var mapView: MKMapView!{
+        didSet{
+            mapView!.delegate = self
+        }
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view, typically from a nib.
+        let notificationCenter = NSNotificationCenter.defaultCenter()
+        notificationCenter.addObserver(self, selector: #selector(TravelMapProtocol.appToBackground), name: UIApplicationWillResignActiveNotification, object: nil)
     }
     
     override func viewWillAppear(animated: Bool) {
@@ -48,7 +66,51 @@ class TravelMapViewController: UIViewController {
     
     override func viewWillDisappear(animated: Bool) {
         super.viewWillDisappear(true)
+        
+    }
+    
+    func appToBackground(){
+        //GO ahead and remove notification and save data
         print("Disappearing")
+        saveMapData()
+    }
+    
+    // MARK: SaveMapData - Save relevant coordinates into nsuserdefaults
+    func saveMapData(){
+        let userDefaults = NSUserDefaults.standardUserDefaults()
+        userDefaults.setValue(mapView.region.center.latitude, forKey: Constants.MapCenterLatitudeKey)
+        userDefaults.setValue(mapView.region.center.longitude, forKey: Constants.MapCenterLongitudeKey)
+        userDefaults.setValue(mapView.region.span.longitudeDelta, forKey: Constants.MapCenterLongDeltaKey)
+        userDefaults.setValue(mapView.region.span.latitudeDelta, forKey: Constants.MapCenterLatDeltaKey)
+        userDefaults.synchronize()
+        print("Saving the center as \(mapView.region.center.latitude)")
+    }
+    
+    // MARK: MapViewDelegates 
+    // MARK: - MKMapViewDelegate Add Pin to MapView
+    func mapView(mapView: MKMapView, viewForAnnotation annotation: MKAnnotation) -> MKAnnotationView? {
+        
+        
+        var pinView = mapView.dequeueReusableAnnotationViewWithIdentifier(Constants.PinReuseIdentifier) as? MKPinAnnotationView
+        if pinView == nil {
+            pinView = MKPinAnnotationView(annotation: annotation, reuseIdentifier: Constants.PinReuseIdentifier)
+            //pinView!.canShowCallout = true
+            pinView!.pinTintColor = UIColor.redColor()
+            pinView!.rightCalloutAccessoryView = UIButton(type: .DetailDisclosure)
+        }
+        else {
+            pinView!.annotation = annotation
+        }
+        
+        return pinView
+    }
+    
+    // This delegate method is implemented to respond to taps. It opens the system browser
+    func mapView(mapView: MKMapView, annotationView view: MKAnnotationView, calloutAccessoryControlTapped control: UIControl) {
+        if control == view.rightCalloutAccessoryView {
+            //let app = UIApplication.sharedApplication()
+            
+        }
     }
     
     /*override func viewWillDisappear(animated: Bool) {

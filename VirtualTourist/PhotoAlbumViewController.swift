@@ -7,17 +7,18 @@
 //
 
 import UIKit
+import CoreData
 
 class PhotoAlbumViewController: UIViewController {
     
     
-    
+    var objectID: NSManagedObjectID?
     
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        // Do any additional setup after loading the view.
+        
     }
 
     override func didReceiveMemoryWarning() {

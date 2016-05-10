@@ -47,9 +47,9 @@ class TravelMapViewController: UIViewController, MKMapViewDelegate {
             Pin.Keys.Longitude : coordinate.longitude,
             Pin.Keys.Created : NSDate()
         ]
-        
         let pin = Pin(dictionary: dictionary, context: sharedContext)
-        print("You added a pin with uri of \(pin.objectID.URIRepresentation())")
+        //Add the object id into the annotation
+        annotation.subtitle = pin.objectID.URIRepresentation().absoluteString
         CoreDataStackManager.sharedInstance().saveContext()
         mapView.addAnnotation(annotation)
     }
@@ -65,8 +65,10 @@ class TravelMapViewController: UIViewController, MKMapViewDelegate {
         notificationCenter.addObserver(self, selector: #selector(TravelMapProtocol.appToBackground), name: UIApplicationWillResignActiveNotification, object: nil)
         
         pins = indexPins()
-        addPins()
+        addPinsToView()
     }
+    
+    
     
     
     
@@ -74,13 +76,14 @@ class TravelMapViewController: UIViewController, MKMapViewDelegate {
     *
     *
     */
-    func addPins(){
+    func addPinsToView(){
         for pin in pins{
             let lat = pin.latitude!.doubleValue
             let long = pin.longitude!.doubleValue
             let coordinate = CLLocationCoordinate2D.init(latitude: lat, longitude: long)
             let annotation = MKPointAnnotation()
             annotation.coordinate = coordinate
+            annotation.subtitle = pin.objectID.URIRepresentation().absoluteString
             mapView.addAnnotation(annotation)
         }
     }
@@ -145,8 +148,14 @@ class TravelMapViewController: UIViewController, MKMapViewDelegate {
     
     // This delegate method is implemented to respond to taps. It opens the system browser
     func mapView(mapView: MKMapView, didSelectAnnotationView view: MKAnnotationView) {
-        print("You selected this pin")
-        view.annotation?.coordinate.latitude
+        if let absoluteString = view.annotation?.subtitle!{
+            let url = NSURL(string: absoluteString)
+            if url != nil{
+                //The url from the pin should, in fact, be the objectID of the coredata instance for Pin
+                
+                performSegueWithIdentifier(Constants.PhotoAlbumSegue, sender: url)
+            }
+        }
     }
     
     // MARK: Index Pins
@@ -161,6 +170,16 @@ class TravelMapViewController: UIViewController, MKMapViewDelegate {
         }
     }
     
+    // MARK: Navigation
+    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+        if segue.identifier == Constants.PhotoAlbumSegue{
+            if let pabc = segue.destinationViewController as? PhotoAlbumViewController{
+                let url = sender as? NSURL
+                let objectId = CoreDataStackManager.sharedInstance().persistentStoreCoordinator?.managedObjectIDForURIRepresentation(url!)
+                pabc.objectID = objectId
+            }
+        }
+    }
 
 
 }

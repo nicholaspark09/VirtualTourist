@@ -47,7 +47,11 @@ class TravelMapViewController: UIViewController {
     }
     
     override func viewWillDisappear(animated: Bool) {
-        super.viewWillDisappear(animated)
+        super.viewWillDisappear(true)
+        print("Disappearing")
+    }
+    
+    /*override func viewWillDisappear(animated: Bool) {
         print("You are disappearing...")
         //Save the map's center location
         let userDefaults = NSUserDefaults.standardUserDefaults()
@@ -57,7 +61,9 @@ class TravelMapViewController: UIViewController {
         userDefaults.setValue(mapView.region.span.latitudeDelta, forKey: Constants.MapCenterLatDeltaKey)
         userDefaults.synchronize()
         print("Saving the center as \(mapView.region.center.latitude)")
+                super.viewWillDisappear(animated)
     }
+ */
 
 
 }

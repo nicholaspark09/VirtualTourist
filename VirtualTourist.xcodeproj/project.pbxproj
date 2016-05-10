@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		AF14BCA11CE22E6900CC00E4 /* PhotoAlbumViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF14BCA01CE22E6900CC00E4 /* PhotoAlbumViewController.swift */; };
+		AF14BCA31CE22EC500CC00E4 /* CoreDataStackManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF14BCA21CE22EC500CC00E4 /* CoreDataStackManager.swift */; };
+		AF14BCA71CE22FBC00CC00E4 /* Pin.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF14BCA51CE22FBC00CC00E4 /* Pin.swift */; };
 		AF8852071CE14C0900B7EE3F /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF8852061CE14C0900B7EE3F /* AppDelegate.swift */; };
 		AF8852091CE14C0900B7EE3F /* TravelMapViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF8852081CE14C0900B7EE3F /* TravelMapViewController.swift */; };
 		AF88520C1CE14C0900B7EE3F /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AF88520A1CE14C0900B7EE3F /* Main.storyboard */; };
@@ -38,6 +41,9 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		AF14BCA01CE22E6900CC00E4 /* PhotoAlbumViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PhotoAlbumViewController.swift; sourceTree = "<group>"; };
+		AF14BCA21CE22EC500CC00E4 /* CoreDataStackManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CoreDataStackManager.swift; sourceTree = "<group>"; };
+		AF14BCA51CE22FBC00CC00E4 /* Pin.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Pin.swift; sourceTree = "<group>"; };
 		AF8852031CE14C0900B7EE3F /* VirtualTourist.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = VirtualTourist.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AF8852061CE14C0900B7EE3F /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		AF8852081CE14C0900B7EE3F /* TravelMapViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TravelMapViewController.swift; sourceTree = "<group>"; };
@@ -110,7 +116,6 @@
 				AF8852381CE14C8A00B7EE3F /* Controllers */,
 				AF8852371CE14C8500B7EE3F /* Models */,
 				AF8852061CE14C0900B7EE3F /* AppDelegate.swift */,
-				AF8852081CE14C0900B7EE3F /* TravelMapViewController.swift */,
 				AF88520A1CE14C0900B7EE3F /* Main.storyboard */,
 				AF8852101CE14C0900B7EE3F /* Assets.xcassets */,
 				AF8852121CE14C0900B7EE3F /* LaunchScreen.storyboard */,
@@ -141,7 +146,9 @@
 		AF8852371CE14C8500B7EE3F /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				AF14BCA21CE22EC500CC00E4 /* CoreDataStackManager.swift */,
 				AFBE57561CE18EEB00690F9F /* Flickr */,
+				AF14BCA51CE22FBC00CC00E4 /* Pin.swift */,
 			);
 			name = Models;
 			sourceTree = "<group>";
@@ -149,6 +156,8 @@
 		AF8852381CE14C8A00B7EE3F /* Controllers */ = {
 			isa = PBXGroup;
 			children = (
+				AF8852081CE14C0900B7EE3F /* TravelMapViewController.swift */,
+				AF14BCA01CE22E6900CC00E4 /* PhotoAlbumViewController.swift */,
 			);
 			name = Controllers;
 			sourceTree = "<group>";
@@ -312,7 +321,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				AF8852091CE14C0900B7EE3F /* TravelMapViewController.swift in Sources */,
+				AF14BCA31CE22EC500CC00E4 /* CoreDataStackManager.swift in Sources */,
+				AF14BCA11CE22E6900CC00E4 /* PhotoAlbumViewController.swift in Sources */,
 				AFBE57581CE18EFB00690F9F /* FlickerConstants.swift in Sources */,
+				AF14BCA71CE22FBC00CC00E4 /* Pin.swift in Sources */,
 				AF8852071CE14C0900B7EE3F /* AppDelegate.swift in Sources */,
 				AF88520F1CE14C0900B7EE3F /* VirtualTourist.xcdatamodeld in Sources */,
 				AF88523C1CE14DC900B7EE3F /* Helpers.swift in Sources */,

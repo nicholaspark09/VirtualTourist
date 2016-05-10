@@ -8,6 +8,7 @@
 
 import UIKit
 import MapKit
+import CoreData
 
 @objc protocol TravelMapProtocol{
     func appToBackground()
@@ -21,15 +22,35 @@ class TravelMapViewController: UIViewController, MKMapViewDelegate {
         static let MapCenterLatDeltaKey = "MapLatitudeDelta"
         static let MapCenterLongDeltaKey = "MapLongitudeDelta"
         static let PinReuseIdentifier = "Pin"
+        static let PhotoAlbumSegue = "PhotoAlbum Segue"
+        static let PinIdKey = "PinIDKey"
     }
+    
+    // MARK: SharedInstance of CoreDataStackManager
+    var sharedContext: NSManagedObjectContext {
+        return CoreDataStackManager.sharedInstance().managedObjectContext
+    }
+    var pins = [Pin]()
+
     
     
     @IBAction func mapHeld(sender: UILongPressGestureRecognizer) {
         
         let point = sender.locationOfTouch(0, inView:mapView)
+
         let coordinate = mapView.convertPoint(point, toCoordinateFromView: mapView)
         let annotation = MKPointAnnotation()
         annotation.coordinate = coordinate
+        //Add the point to the local DB First
+        let dictionary: [String:AnyObject] = [
+            Pin.Keys.Latitude : coordinate.latitude,
+            Pin.Keys.Longitude : coordinate.longitude,
+            Pin.Keys.Created : NSDate()
+        ]
+        
+        let pin = Pin(dictionary: dictionary, context: sharedContext)
+        print("You added a pin with uri of \(pin.objectID.URIRepresentation())")
+        CoreDataStackManager.sharedInstance().saveContext()
         mapView.addAnnotation(annotation)
     }
     @IBOutlet var mapView: MKMapView!{
@@ -42,7 +63,28 @@ class TravelMapViewController: UIViewController, MKMapViewDelegate {
         super.viewDidLoad()
         let notificationCenter = NSNotificationCenter.defaultCenter()
         notificationCenter.addObserver(self, selector: #selector(TravelMapProtocol.appToBackground), name: UIApplicationWillResignActiveNotification, object: nil)
+        
+        pins = indexPins()
+        addPins()
     }
+    
+    
+    
+    /**     Add the pins to the map after loading them from CoreData
+    *
+    *
+    */
+    func addPins(){
+        for pin in pins{
+            let lat = pin.latitude!.doubleValue
+            let long = pin.longitude!.doubleValue
+            let coordinate = CLLocationCoordinate2D.init(latitude: lat, longitude: long)
+            let annotation = MKPointAnnotation()
+            annotation.coordinate = coordinate
+            mapView.addAnnotation(annotation)
+        }
+    }
+    
     
     override func viewWillAppear(animated: Bool) {
         super.viewWillAppear(animated)
@@ -64,10 +106,6 @@ class TravelMapViewController: UIViewController, MKMapViewDelegate {
         }
     }
     
-    override func viewWillDisappear(animated: Bool) {
-        super.viewWillDisappear(true)
-        
-    }
     
     func appToBackground(){
         //GO ahead and remove notification and save data
@@ -94,7 +132,7 @@ class TravelMapViewController: UIViewController, MKMapViewDelegate {
         var pinView = mapView.dequeueReusableAnnotationViewWithIdentifier(Constants.PinReuseIdentifier) as? MKPinAnnotationView
         if pinView == nil {
             pinView = MKPinAnnotationView(annotation: annotation, reuseIdentifier: Constants.PinReuseIdentifier)
-            //pinView!.canShowCallout = true
+            pinView!.canShowCallout = false
             pinView!.pinTintColor = UIColor.redColor()
             pinView!.rightCalloutAccessoryView = UIButton(type: .DetailDisclosure)
         }
@@ -106,26 +144,23 @@ class TravelMapViewController: UIViewController, MKMapViewDelegate {
     }
     
     // This delegate method is implemented to respond to taps. It opens the system browser
-    func mapView(mapView: MKMapView, annotationView view: MKAnnotationView, calloutAccessoryControlTapped control: UIControl) {
-        if control == view.rightCalloutAccessoryView {
-            //let app = UIApplication.sharedApplication()
-            
+    func mapView(mapView: MKMapView, didSelectAnnotationView view: MKAnnotationView) {
+        print("You selected this pin")
+        view.annotation?.coordinate.latitude
+    }
+    
+    // MARK: Index Pins
+    func indexPins() -> [Pin] {
+        let fetchRequest = NSFetchRequest(entityName: "Pin")
+        
+        do{
+            return try sharedContext.executeFetchRequest(fetchRequest) as! [Pin]
+        } catch let error as NSError{
+            print("The error was \(error)")
+            return [Pin]()
         }
     }
     
-    /*override func viewWillDisappear(animated: Bool) {
-        print("You are disappearing...")
-        //Save the map's center location
-        let userDefaults = NSUserDefaults.standardUserDefaults()
-        userDefaults.setValue(mapView.region.center.latitude, forKey: Constants.MapCenterLatitudeKey)
-        userDefaults.setValue(mapView.region.center.longitude, forKey: Constants.MapCenterLongitudeKey)
-        userDefaults.setValue(mapView.region.span.longitudeDelta, forKey: Constants.MapCenterLongDeltaKey)
-        userDefaults.setValue(mapView.region.span.latitudeDelta, forKey: Constants.MapCenterLatDeltaKey)
-        userDefaults.synchronize()
-        print("Saving the center as \(mapView.region.center.latitude)")
-                super.viewWillDisappear(animated)
-    }
- */
 
 
 }

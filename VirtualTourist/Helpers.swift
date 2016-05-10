@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import UIKit
 
 
 //Make sure things are done on the main thread
@@ -15,3 +16,4 @@ func performOnMain(updates: () -> Void){
         updates()
     }
 }
+

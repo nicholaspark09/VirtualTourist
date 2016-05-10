@@ -12,11 +12,10 @@ class FlickrClient: NSObject{
     
     var session = NSURLSession.sharedSession()
     
-    // MARK: GET requests
-    
+    // MARK: GET
     func httpGet(method: String, parameters: [String : AnyObject], completionHandlerForGET:(result:AnyObject!, error: NSError?) -> Void) -> NSURLSessionDataTask{
         let request = NSMutableURLRequest(URL: urlFromParameters(parameters, withPathExtension: method))
-        request.addValue(Constants.ApiKey, forHTTPHeaderField: "X-Parse-REST-API-Key")
+        //request.addValue(Constants.ApiKey, forHTTPHeaderField: "X-Parse-REST-API-Key")
         let task = session.dataTaskWithRequest(request) { (data, response, error) in
             func sendError(error: String){
                 print(error)
@@ -52,7 +51,7 @@ class FlickrClient: NSObject{
         request.HTTPMethod = "POST"
         request.addValue("application/json",forHTTPHeaderField: "Accept")
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.addValue(Constants.ApiKey, forHTTPHeaderField: "X-Parse-REST-API-Key")
+        //request.addValue(Constants.ApiKey, forHTTPHeaderField: "X-Parse-REST-API-Key")
         request.HTTPBody = jsonBody.dataUsingEncoding(NSUTF8StringEncoding)
         let task = session.dataTaskWithRequest(request) { (data, response, error) in
             
@@ -120,6 +119,24 @@ class FlickrClient: NSObject{
             completionHandlerForConvertData(result: nil, error: NSError(domain:"convertDataWithCompletionHandler",code: 1, userInfo: userInfo))
         }
         completionHandlerForConvertData(result:parsedResult, error:nil)
+    }
+    
+    // MARK: - Shared Date Formatter
+    
+    class var sharedDateFormatter: NSDateFormatter  {
+        
+        struct Singleton {
+            static let dateFormatter = Singleton.generateDateFormatter()
+            
+            static func generateDateFormatter() -> NSDateFormatter {
+                let formatter = NSDateFormatter()
+                formatter.dateFormat = "yyyy-mm-dd"
+                
+                return formatter
+            }
+        }
+        
+        return Singleton.dateFormatter
     }
     
     // MARK: Shared Instance

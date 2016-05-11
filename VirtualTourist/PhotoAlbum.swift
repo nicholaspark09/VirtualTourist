@@ -1,5 +1,5 @@
 //
-//  Pin.swift
+//  PhotoAlbum.swift
 //  VirtualTourist
 //
 //  Created by Nicholas Park on 5/11/16.
@@ -10,21 +10,20 @@ import Foundation
 import CoreData
 
 
-class Pin: NSManagedObject {
+class PhotoAlbum: NSManagedObject {
 
-    @NSManaged var id: NSNumber?
-    @NSManaged var latitude: NSNumber?
-    @NSManaged var longitude: NSNumber?
+    @NSManaged var title: String?
     @NSManaged var created: NSDate?
-    @NSManaged var photoAlbum: PhotoAlbum?
+    @NSManaged var updatedAt: NSDate?
+    @NSManaged var place: Pin?
     
     struct Keys{
-        static let Id = "id"
+        static let Title = "title"
         static let Created = "created"
-        static let Latitude = "latitude"
-        static let Longitude = "longitude"
+        static let UpdatedAt = "updatedAt"
+        static let Place = "place"
     }
-
+    
     override init(entity: NSEntityDescription, insertIntoManagedObjectContext context: NSManagedObjectContext?) {
         super.init(entity: entity, insertIntoManagedObjectContext: context)
     }
@@ -36,14 +35,19 @@ class Pin: NSManagedObject {
         super.init(entity: entity, insertIntoManagedObjectContext: context)
         
         // Dictionary
-        latitude = dictionary[Keys.Latitude] as? NSNumber
-        longitude = dictionary[Keys.Longitude] as? NSNumber
+        title = dictionary[Keys.Title] as? String
         
+        //Set the Dates
         if let dateString = dictionary[Keys.Created] as? String {
             if let date = FlickrClient.sharedDateFormatter.dateFromString(dateString) {
                 created = date
             }
         }
+        if let updatedString = dictionary[Keys.UpdatedAt] as? String{
+            if let date = FlickrClient.sharedDateFormatter.dateFromString(updatedString){
+                updatedAt = date
+            }
+        }
     }
-    
+
 }

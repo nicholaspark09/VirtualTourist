@@ -148,11 +148,10 @@ class TravelMapViewController: UIViewController, MKMapViewDelegate {
     
     // This delegate method is implemented to respond to taps. It opens the system browser
     func mapView(mapView: MKMapView, didSelectAnnotationView view: MKAnnotationView) {
-        if let absoluteString = view.annotation?.subtitle!{
+        if let absoluteString = view.annotation!.subtitle!{
             let url = NSURL(string: absoluteString)
             if url != nil{
                 //The url from the pin should, in fact, be the objectID of the coredata instance for Pin
-                
                 performSegueWithIdentifier(Constants.PhotoAlbumSegue, sender: url)
             }
         }
@@ -173,9 +172,9 @@ class TravelMapViewController: UIViewController, MKMapViewDelegate {
     // MARK: Navigation
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
         if segue.identifier == Constants.PhotoAlbumSegue{
-            if let pabc = segue.destinationViewController as? PhotoAlbumViewController{
+            if let pabc = segue.destinationViewController.contentViewController as? PhotoAlbumViewController{
                 let url = sender as? NSURL
-                let objectId = CoreDataStackManager.sharedInstance().persistentStoreCoordinator?.managedObjectIDForURIRepresentation(url!)
+                let objectId = CoreDataStackManager.sharedInstance().persistentStoreCoordinator!.managedObjectIDForURIRepresentation(url!)
                 pabc.objectID = objectId
             }
         }

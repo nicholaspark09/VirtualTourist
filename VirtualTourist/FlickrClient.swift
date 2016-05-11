@@ -77,7 +77,6 @@ class FlickrClient: NSObject{
                 sendError("No data sent back by request")
                 return
             }
-            
             self.convertDataWithCompletion(data, completionHandlerForConvertData: completionHandlerForPOST)
         }
         task.resume()

@@ -50,6 +50,11 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, UICollectio
     var sharedContext: NSManagedObjectContext {
         return CoreDataStackManager.sharedInstance().managedObjectContext
     }
+    
+    //Image Cache
+    struct Cache{
+        static let imageCache = ImageCache()
+    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -64,10 +69,18 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, UICollectio
                 pin = object as! Pin
                 
                 centerMap()
-                FlickrClient.sharedInstance.findWithPin(pin!){(results,error) in
-                
+                if pin!.photoAlbum == nil{
+                    print("Couldn't find an album")
+                    createAlbum()
+                }else{
+                    print("Found an album with name: \(pin!.photoAlbum!.title)")
+                    if pin!.photoAlbum!.photos.count > 0{
+                        print("Found photos")
+                        self.collectionView.reloadData()
+                    }else{
+                        pullPhotosFromFlickr()
+                    }
                 }
-                
             }catch {
                 
                 let nserror = error as NSError
@@ -77,7 +90,60 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, UICollectio
         }
     }
     
+    func createAlbum(){
+        
+        let dictionary = [
+            PhotoAlbum.Keys.Title : "Photos",
+            PhotoAlbum.Keys.Created : NSDate(),
+            PhotoAlbum.Keys.UpdatedAt : NSDate(),
+            ]
+        let Album = PhotoAlbum.init(dictionary: dictionary, context: sharedContext)
+        Album.place = pin!
+        CoreDataStackManager.sharedInstance().saveContext()
+        self.saveContext()
+        //Since this is a new album, go fetch some photos from flickr
+        pullPhotosFromFlickr()
+    }
     
+    //Get the photos from flickr
+    /**
+    *       This is happening on a separate thread
+    *           Update everything on the main thread
+    *
+    *
+    */
+    func pullPhotosFromFlickr(){
+        FlickrClient.sharedInstance.findWithPin(pin!){(results,error) in
+            if let error = error{
+                performOnMain(){
+                    self.simpleError(error)
+                }
+            }else{
+                if let photoDictionary = results![FlickrClient.JSONResponseKeys.Photo] as? [[String:AnyObject]] {
+                    let _ = photoDictionary.map() { (dictionary: [String:AnyObject]) -> Photo in
+                        let photo = Photo(dictionary: dictionary, context: self.sharedContext)
+                        photo.localDirectory = ""
+                        photo.album = self.pin!.photoAlbum!
+                        return photo
+                    }
+                }
+                self.saveContext()
+                performOnMain(){
+                    print("YOu got them")
+                    //Grab the pin again to refresh the photos
+                    do{
+                        let object = try CoreDataStackManager.sharedInstance().managedObjectContext.existingObjectWithID(self.objectID!)
+                        self.pin = object as! Pin
+                        self.collectionView.reloadData()
+                    } catch {
+                        let nserror = error as NSError
+                        print("The error was \(nserror)")
+                    }
+                    
+                }
+            }
+        }
+    }
     //Set the map and add the pin
     func centerMap(){
         let lat = pin!.latitude!.doubleValue
@@ -90,6 +156,13 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, UICollectio
         annotation.coordinate = coordinate
         theMapView.addAnnotation(annotation)
     }
+    
+    
+    func saveContext(){
+        performOnMain(){
+            CoreDataStackManager.sharedInstance().saveContext()
+        }
+    }
  
 
     // MARK: - Return to Previous
@@ -100,14 +173,48 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, UICollectio
     
     // MARK: UICollectionView Methods
     func collectionView(collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        if pin!.photoAlbum != nil{
+            print("You found \(pin!.photoAlbum!.photos.count)")
+            return pin!.photoAlbum!.photos.count
+        }
         return 0
     }
     
     func collectionView(collectionView: UICollectionView, cellForItemAtIndexPath indexPath: NSIndexPath) -> UICollectionViewCell{
         let cell = collectionView.dequeueReusableCellWithReuseIdentifier(Constants.PhotoAlbumCell, forIndexPath: indexPath) as! PhotoAlbumCollectionViewCell
-        
-        
+        let photo = pin!.photoAlbum!.photos[indexPath.row]
+        // if an image exists at the url, set the image and title
+        var placedImage = UIImage(named: "NoImage")
+        if photo.localDirectory != nil && photo.localDirectory != ""{
+            print("Found an image")
+            placedImage = photo.photoImage
+        }else if photo.url_m != nil{
+            let imageURL = NSURL(string: photo.url_m!)
+            FlickrClient.sharedInstance.taskForImageWithSize(imageURL!, filePath: photo.url_m!){(imageData,error) in
+                if let error = error{
+                    print("Error: \(error)")
+                }else{
+                    photo.localDirectory = photo.url_m!
+                    photo.photoImage = UIImage(data: imageData!)
+                    performOnMain(){
+                        placedImage = photo.photoImage
+                        cell.imageView.image = photo.photoImage
+                    }
+                    self.saveContext()
+                }
+            }
+        }
+        cell.imageView.image = placedImage
         return cell
+    }
+    
+    
+    @IBAction func clearAlbum(sender: UIButton) {
+        if pin!.photoAlbum != nil{
+            pin!.photoAlbum = nil
+            saveContext()
+            createAlbum()
+        }
     }
     
     /*

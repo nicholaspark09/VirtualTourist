@@ -12,4 +12,12 @@ class PhotoAlbumCollectionViewCell: UICollectionViewCell {
     
     @IBOutlet var imageView: UIImageView!
     
+    var imageName: String = ""
+    var taskToCancelIfReused: NSURLSessionTask?{
+        didSet{
+            if let taskToCancel = oldValue{
+                taskToCancel.cancel()
+            }
+        }
+    }
 }

@@ -16,6 +16,7 @@ class PhotoAlbum: NSManagedObject {
     @NSManaged var created: NSDate?
     @NSManaged var updatedAt: NSDate?
     @NSManaged var place: Pin?
+    @NSManaged var photos: [Photo]
     
     struct Keys{
         static let Title = "title"
@@ -31,7 +32,7 @@ class PhotoAlbum: NSManagedObject {
     init(dictionary: [String : AnyObject], context: NSManagedObjectContext) {
         
         // Core Data
-        let entity =  NSEntityDescription.entityForName("Pin", inManagedObjectContext: context)!
+        let entity =  NSEntityDescription.entityForName("PhotoAlbum", inManagedObjectContext: context)!
         super.init(entity: entity, insertIntoManagedObjectContext: context)
         
         // Dictionary

@@ -48,9 +48,9 @@ class TravelMapViewController: UIViewController, MKMapViewDelegate {
             Pin.Keys.Created : NSDate()
         ]
         let pin = Pin(dictionary: dictionary, context: sharedContext)
+        CoreDataStackManager.sharedInstance().saveContext()
         //Add the object id into the annotation
         annotation.subtitle = pin.objectID.URIRepresentation().absoluteString
-        CoreDataStackManager.sharedInstance().saveContext()
         mapView.addAnnotation(annotation)
     }
     @IBOutlet var mapView: MKMapView!{

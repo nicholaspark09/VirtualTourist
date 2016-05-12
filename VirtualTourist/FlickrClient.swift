@@ -11,6 +11,7 @@ import Foundation
 class FlickrClient: NSObject{
     
     var session = NSURLSession.sharedSession()
+    var cache = ImageCache()
     
     // MARK: GET
     func httpGet(method: String, parameters: [String : AnyObject], completionHandlerForGET:(result:AnyObject!, error: NSError?) -> Void) -> NSURLSessionDataTask{
@@ -138,7 +139,10 @@ class FlickrClient: NSObject{
         return Singleton.dateFormatter
     }
     
+    
     // MARK: Shared Instance
     static let sharedInstance = FlickrClient()
     private override init(){}
+    
+    
 }

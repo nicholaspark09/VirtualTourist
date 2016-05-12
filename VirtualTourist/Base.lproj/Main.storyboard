@@ -69,6 +69,9 @@
                                     <constraint firstAttribute="width" constant="147" id="UaT-zP-Xdk"/>
                                 </constraints>
                                 <state key="normal" title="New Collection"/>
+                                <connections>
+                                    <action selector="clearAlbum:" destination="Bby-Ia-vRs" eventType="touchUpInside" id="dHM-Yf-YYE"/>
+                                </connections>
                             </button>
                             <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="ACQ-zk-ZBH">
                                 <rect key="frame" x="0.0" y="192" width="600" height="364"/>

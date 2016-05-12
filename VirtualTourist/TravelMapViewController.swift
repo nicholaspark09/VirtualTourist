@@ -164,12 +164,12 @@ class TravelMapViewController: UIViewController, MKMapViewDelegate {
     
     // This delegate method is implemented to respond to taps. It opens the system browser
     func mapView(mapView: MKMapView, didSelectAnnotationView view: MKAnnotationView) {
-        print("YOu selected a pin")
         if let absoluteString = view.annotation!.subtitle!{
             let url = NSURL(string: absoluteString)
             if url != nil{
                 //The url from the pin should, in fact, be the objectID of the coredata instance for Pin
                 performSegueWithIdentifier(Constants.PhotoAlbumSegue, sender: url)
+                mapView.deselectAnnotation(view as? MKAnnotation, animated: false)
             }
         }
     }

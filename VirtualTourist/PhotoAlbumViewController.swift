@@ -54,6 +54,7 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, UICollectio
     
     var objectID: NSManagedObjectID?
     var pin:Pin?
+    var currentIndex: Int = -1
     
     /*
     // MARK: - Fetched Results Controller
@@ -233,7 +234,6 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, UICollectio
     
     // MARK: - SelectedPhoto
     func collectionView(collectionView: UICollectionView, didSelectItemAtIndexPath indexPath: NSIndexPath) {
-        let photo = pin!.photoAlbum!.photos[indexPath.row]
         /**  This is what the app requires, but I wanted to see the images
          *
          *
@@ -249,15 +249,24 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, UICollectio
         }))
         presentViewController(deleteAlert, animated: true, completion: nil)
          */
-        performSegueWithIdentifier(Constants.PhotoViewSegue, sender: photo)
+        currentIndex = indexPath.row
+        performSegueWithIdentifier(Constants.PhotoViewSegue, sender: pin!.photoAlbum!.photos[indexPath.row])
     }
     
     @IBAction func unwindToDeletePhoto(sender: UIStoryboardSegue){
         if let sourceViewController = sender.sourceViewController as? PhotoViewController{
             let photo = sourceViewController.photo!
             CoreDataStackManager.sharedInstance().managedObjectContext.deleteObject(photo as NSManagedObject)
+            
+            //Remove the object from the OrderedSet as well
+            // If this doesn't remove it from sqlite, then I don't know what to do....
+            if currentIndex != -1{
+                
+               CoreDataStackManager.sharedInstance().managedObjectContext.deleteObject(pin!.photoAlbum!.photos[currentIndex])
+            }
             self.saveContext()
             self.collectionView.reloadData()
+            currentIndex = -1
         }
     }
     

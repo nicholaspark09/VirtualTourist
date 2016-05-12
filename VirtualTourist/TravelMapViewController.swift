@@ -31,7 +31,15 @@ class TravelMapViewController: UIViewController, MKMapViewDelegate {
         return CoreDataStackManager.sharedInstance().managedObjectContext
     }
     var pins = [Pin]()
-
+    var downloadingPhotos: Bool = false{
+        didSet{
+            if downloadingPhotos == true{
+                performOnMain(){
+                    
+                }
+            }
+        }
+    }
     
     
     @IBAction func mapHeld(sender: UILongPressGestureRecognizer) {
@@ -47,12 +55,22 @@ class TravelMapViewController: UIViewController, MKMapViewDelegate {
                 Pin.Keys.Created : NSDate()
             ]
             let pin = Pin(dictionary: dictionary, context: sharedContext)
-            
+            // Create the photo album here
+            let albumDictionary : [String:AnyObject] = [
+                PhotoAlbum.Keys.Title : "Photos for \(pin.latitude)",
+                PhotoAlbum.Keys.Created: NSDate(),
+                PhotoAlbum.Keys.UpdatedAt: NSDate()
+            ]
+            let Album = PhotoAlbum.init(dictionary: albumDictionary, context: sharedContext)
+            Album.place = pin
+            print("Save the album to the pin")
+            pin.photoAlbum = Album
             CoreDataStackManager.sharedInstance().saveContext()
             //Add the object id into the annotation
             annotation.subtitle = pin.objectID.URIRepresentation().absoluteString
             mapView.addAnnotation(annotation)
             //Start loading the photos
+            pullPhotosFromFlickr(pin)
         }
         
     }
@@ -68,7 +86,6 @@ class TravelMapViewController: UIViewController, MKMapViewDelegate {
         notificationCenter.addObserver(self, selector: #selector(TravelMapProtocol.appToBackground), name: UIApplicationWillResignActiveNotification, object: nil)
         
         pins = indexPins()
-        print("The length of pins is \(pins.count)")
         addPinsToView()
     }
     
@@ -177,6 +194,37 @@ class TravelMapViewController: UIViewController, MKMapViewDelegate {
                 let url = sender as? NSURL
                 let objectId = CoreDataStackManager.sharedInstance().persistentStoreCoordinator!.managedObjectIDForURIRepresentation(url!)
                 pabc.objectID = objectId
+            }
+        }
+    }
+    
+    //Get the photos from flickr
+    /**
+     *       This is happening on a separate thread
+     *           Update everything on the main thread
+     *
+     *
+     */
+    func pullPhotosFromFlickr(pin: Pin){
+        FlickrClient.sharedInstance.findWithPin(pin){(results,error) in
+            if let error = error{
+                performOnMain(){
+                    self.simpleError(error)
+                }
+            }else{
+                if let photoDictionary = results![FlickrClient.JSONResponseKeys.Photo] as? [[String:AnyObject]] {
+                    let _ = photoDictionary.map() { (dictionary: [String:AnyObject]) -> Photo in
+                        let photo = Photo(dictionary: dictionary, context: self.sharedContext)
+                        photo.album = pin.photoAlbum!
+                        return photo
+                    }
+                }
+                performOnMain(){
+                    CoreDataStackManager.sharedInstance().saveContext()
+                }
+            }
+            performOnMain(){
+                self.downloadingPhotos = false
             }
         }
     }

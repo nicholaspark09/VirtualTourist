@@ -122,11 +122,77 @@
                         <outlet property="collectionViewFlowLayout" destination="IRq-hr-pSd" id="704-uS-sh4"/>
                         <outlet property="newCollectionButton" destination="dis-Fz-olm" id="2iV-aX-6eU"/>
                         <outlet property="theMapView" destination="1AS-y5-dnV" id="Tsa-Ta-r98"/>
+                        <segue destination="XMG-Pb-Mrp" kind="presentation" identifier="PhotoView Segue" modalPresentationStyle="formSheet" modalTransitionStyle="coverVertical" id="IA4-4a-RlQ"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="8cR-Uf-rNf" userLabel="First Responder" sceneMemberID="firstResponder"/>
+                <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" id="NwE-RS-zRV">
+                    <rect key="frame" x="0.0" y="0.0" width="240" height="128"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                </imageView>
             </objects>
             <point key="canvasLocation" x="2040" y="366"/>
+        </scene>
+        <!--Photo View Controller-->
+        <scene sceneID="E0Q-TA-VGt">
+            <objects>
+                <viewController id="XMG-Pb-Mrp" customClass="PhotoViewController" customModule="VirtualTourist" customModuleProvider="target" sceneMemberID="viewController">
+                    <layoutGuides>
+                        <viewControllerLayoutGuide type="top" id="cBM-17-QJl"/>
+                        <viewControllerLayoutGuide type="bottom" id="jqA-0m-rdT"/>
+                    </layoutGuides>
+                    <view key="view" contentMode="scaleToFill" id="kyo-4G-rIO">
+                        <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="dpO-7p-Y7D">
+                                <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
+                            </imageView>
+                            <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" translatesAutoresizingMaskIntoConstraints="NO" id="B7s-6i-dpy">
+                                <rect key="frame" x="0.0" y="550" width="600" height="50"/>
+                                <subviews>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Ddq-ww-AbF">
+                                        <rect key="frame" x="0.0" y="0.0" width="300" height="50"/>
+                                        <state key="normal" title="Delete">
+                                            <color key="titleColor" red="1" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                                        </state>
+                                        <connections>
+                                            <action selector="deleteClicked:" destination="XMG-Pb-Mrp" eventType="touchUpInside" id="BbE-y1-5Ih"/>
+                                        </connections>
+                                    </button>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="rQr-3D-tAY">
+                                        <rect key="frame" x="300" y="0.0" width="300" height="50"/>
+                                        <state key="normal" title="Close"/>
+                                        <connections>
+                                            <action selector="closeClicked:" destination="XMG-Pb-Mrp" eventType="touchUpInside" id="xpf-7u-zDe"/>
+                                        </connections>
+                                    </button>
+                                </subviews>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="50" id="mXV-aa-oQl"/>
+                                </constraints>
+                            </stackView>
+                        </subviews>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                        <constraints>
+                            <constraint firstItem="dpO-7p-Y7D" firstAttribute="top" secondItem="kyo-4G-rIO" secondAttribute="top" id="17W-uC-fF2"/>
+                            <constraint firstItem="B7s-6i-dpy" firstAttribute="leading" secondItem="kyo-4G-rIO" secondAttribute="leadingMargin" constant="-20" id="6fh-Tn-Bpo"/>
+                            <constraint firstItem="dpO-7p-Y7D" firstAttribute="bottom" secondItem="jqA-0m-rdT" secondAttribute="top" id="J9L-Bt-nnk"/>
+                            <constraint firstAttribute="trailing" secondItem="dpO-7p-Y7D" secondAttribute="trailing" id="Tyf-aH-9QO"/>
+                            <constraint firstAttribute="trailingMargin" secondItem="B7s-6i-dpy" secondAttribute="trailing" constant="-20" id="Va6-EX-3nk"/>
+                            <constraint firstItem="jqA-0m-rdT" firstAttribute="top" secondItem="B7s-6i-dpy" secondAttribute="bottom" id="ZRx-Nz-30D"/>
+                            <constraint firstItem="dpO-7p-Y7D" firstAttribute="leading" secondItem="kyo-4G-rIO" secondAttribute="leading" id="oHA-yW-uMY"/>
+                        </constraints>
+                    </view>
+                    <connections>
+                        <outlet property="imageView" destination="dpO-7p-Y7D" id="g15-AG-GXy"/>
+                        <segue destination="a7f-9O-6oj" kind="unwind" identifier="DeletePhoto Segue" unwindAction="unwindToDeletePhoto:" id="iKN-hJ-fH3"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="AOI-Ry-FRg" userLabel="First Responder" sceneMemberID="firstResponder"/>
+                <exit id="a7f-9O-6oj" userLabel="Exit" sceneMemberID="exit"/>
+            </objects>
+            <point key="canvasLocation" x="3026" y="366"/>
         </scene>
         <!--Navigation Controller-->
         <scene sceneID="naP-Xe-Y0r">

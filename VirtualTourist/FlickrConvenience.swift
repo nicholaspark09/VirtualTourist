@@ -85,12 +85,6 @@ extension FlickrClient{
                 return
             }
             
-            /* GUARD: Is "pages" key in the photosDictionary? */
-            guard let totalPages = photosDictionary[JSONResponseKeys.Pages] as? Int else {
-                sendError("Cannot find key '\(JSONResponseKeys.Pages)' in \(photosDictionary)")
-                return
-            }
-            
             //Got shtuff back
             completionHandlerForFindPin(results: photosDictionary, error: nil)
             //print("The data is \(photosDictionary)")

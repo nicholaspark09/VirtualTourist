@@ -24,6 +24,7 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, UICollectio
         static let AlertMessage = "Delete the photo from the album?"
         static let AlertDelete = "Delete"
         static let AlertCancel = "Cancel"
+        static let PhotoViewSegue = "PhotoView Segue"
     }
     
     // MARK: -IBOutlets
@@ -146,9 +147,9 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, UICollectio
                         return photo
                     }
                 }
-                self.saveContext()
                 performOnMain(){
-                    print("YOu got them")
+                    self.saveContext()
+
                     //Grab the pin again to refresh the photos
                     do{
                         let object = try CoreDataStackManager.sharedInstance().managedObjectContext.existingObjectWithID(self.objectID!) as! Pin
@@ -229,8 +230,13 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, UICollectio
         return cell
     }
     
+    
+    // MARK: - SelectedPhoto
     func collectionView(collectionView: UICollectionView, didSelectItemAtIndexPath indexPath: NSIndexPath) {
         let photo = pin!.photoAlbum!.photos[indexPath.row]
+        /**  This is what the app requires, but I wanted to see the images
+         *
+         *
         let deleteAlert = UIAlertController(title: Constants.AlertTitle, message: Constants.AlertMessage, preferredStyle: UIAlertControllerStyle.Alert)
         deleteAlert.addAction(UIAlertAction(title: Constants.AlertDelete, style: .Default, handler: { (action: UIAlertAction!) in
             print("Delete this things")
@@ -242,6 +248,17 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, UICollectio
             print("You decided to cancel")
         }))
         presentViewController(deleteAlert, animated: true, completion: nil)
+         */
+        performSegueWithIdentifier(Constants.PhotoViewSegue, sender: photo)
+    }
+    
+    @IBAction func unwindToDeletePhoto(sender: UIStoryboardSegue){
+        if let sourceViewController = sender.sourceViewController as? PhotoViewController{
+            let photo = sourceViewController.photo!
+            CoreDataStackManager.sharedInstance().managedObjectContext.deleteObject(photo as NSManagedObject)
+            self.saveContext()
+            self.collectionView.reloadData()
+        }
     }
     
     
@@ -257,14 +274,19 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, UICollectio
         }
     }
     
-    /*
+    
     // MARK: - Navigation
 
     // In a storyboard-based application, you will often want to do a little preparation before navigation
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
-        // Get the new view controller using segue.destinationViewController.
-        // Pass the selected object to the new view controller.
+        if segue.identifier == Constants.PhotoViewSegue{
+            if let pvc = segue.destinationViewController as? PhotoViewController{
+                if let photo = sender as? Photo{
+                    pvc.photo = photo
+                }
+            }
+        }
     }
-    */
+    
 
 }

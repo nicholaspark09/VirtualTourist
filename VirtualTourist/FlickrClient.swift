@@ -11,7 +11,7 @@ import Foundation
 class FlickrClient: NSObject{
     
     var session = NSURLSession.sharedSession()
-    var cache = ImageCache()
+    //var cache = ImagesCache()
     
     // MARK: GET
     func httpGet(method: String, parameters: [String : AnyObject], completionHandlerForGET:(result:AnyObject!, error: NSError?) -> Void) -> NSURLSessionDataTask{

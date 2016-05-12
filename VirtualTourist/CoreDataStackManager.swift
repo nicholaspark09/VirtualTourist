@@ -112,7 +112,7 @@ class CoreDataStackManager {
     
     //Image Cache
     struct Caches{
-        static let imageCache = ImageCache()
+        static let imageCache = ImagesCache()
     }
 }
 

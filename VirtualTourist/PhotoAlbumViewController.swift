@@ -14,8 +14,9 @@ import MapKit
     func goBack()
 }
 
-class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, UICollectionViewDelegate, UICollectionViewDataSource {
+class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, UICollectionViewDelegate, UICollectionViewDataSource, NSFetchedResultsControllerDelegate {
     
+    // I keep these constants local so I can see them while I'm coding
     struct Constants{
         static let Title = "Photo Album"
         static let PhotoAlbumCell = "PhotoAlbum Cell"
@@ -36,25 +37,36 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, UICollectio
             }
         }
     }
-    /*
-    @IBOutlet var mapView: MKMapView!{
-        didSet{
-            mapView.delegate = self
-            
-        }
-    }
- */
+
     var objectID: NSManagedObjectID?
     var pin:Pin?
+    
+    /*
+    // MARK: - Fetched Results Controller
+    lazy var fetchedResultsController: NSFetchedResultsController = {
+        let fetchRequest = NSFetchRequest(entityName: "Pin")
+        fetchRequest.predicate = NSPredicate(format: "parent == %@", objectID)
+    }()
+ */
+    
     // MARK: SharedInstance of CoreDataStackManager
     var sharedContext: NSManagedObjectContext {
         return CoreDataStackManager.sharedInstance().managedObjectContext
     }
     
-    //Image Cache
-    struct Cache{
-        static let imageCache = ImageCache()
+    
+    
+    func controllerWillChangeContent(controller: NSFetchedResultsController) {
+        // This invocation prepares the table to recieve a number of changes. It will store them up
+        // until it receives endUpdates(), and then perform them all at once.
+        collectionView.performBatchUpdates(nil, completion: nil)
     }
+    
+    // When endUpdates() is invoked, the table makes the changes visible.
+    func controllerDidChangeContent(controller: NSFetchedResultsController) {
+        collectionView.setNeedsUpdateConstraints()
+    }
+
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -99,8 +111,15 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, UICollectio
             ]
         let Album = PhotoAlbum.init(dictionary: dictionary, context: sharedContext)
         Album.place = pin!
-        CoreDataStackManager.sharedInstance().saveContext()
         self.saveContext()
+        do{
+            
+            let object = try CoreDataStackManager.sharedInstance().managedObjectContext.existingObjectWithID(objectID!)
+            pin = object as! Pin
+        } catch {
+            let nserror = error as NSError
+            print("The error was \(nserror.localizedDescription)")
+        }
         //Since this is a new album, go fetch some photos from flickr
         pullPhotosFromFlickr()
     }
@@ -211,9 +230,13 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, UICollectio
     
     @IBAction func clearAlbum(sender: UIButton) {
         if pin!.photoAlbum != nil{
-            pin!.photoAlbum = nil
-            saveContext()
-            createAlbum()
+            //Clear the cache of images first
+            performOnMain(){
+                self.pin!.photoAlbum = nil
+                CoreDataStackManager.sharedInstance().saveContext()
+                self.createAlbum()
+            }
+            
         }
     }
     

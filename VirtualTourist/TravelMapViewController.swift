@@ -160,7 +160,8 @@ class TravelMapViewController: UIViewController, MKMapViewDelegate {
     // MARK: Index Pins
     func indexPins() -> [Pin] {
         let fetchRequest = NSFetchRequest(entityName: "Pin")
-        
+        //No need for extra child entities here, keep it quick
+        fetchRequest.includesSubentities = false
         do{
             return try sharedContext.executeFetchRequest(fetchRequest) as! [Pin]
         } catch let error as NSError{

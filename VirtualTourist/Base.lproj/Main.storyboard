@@ -119,6 +119,8 @@
                     <navigationItem key="navigationItem" id="0fU-OI-8AT"/>
                     <connections>
                         <outlet property="collectionView" destination="ACQ-zk-ZBH" id="MLF-Qe-sOb"/>
+                        <outlet property="collectionViewFlowLayout" destination="IRq-hr-pSd" id="704-uS-sh4"/>
+                        <outlet property="newCollectionButton" destination="dis-Fz-olm" id="2iV-aX-6eU"/>
                         <outlet property="theMapView" destination="1AS-y5-dnV" id="Tsa-Ta-r98"/>
                     </connections>
                 </viewController>

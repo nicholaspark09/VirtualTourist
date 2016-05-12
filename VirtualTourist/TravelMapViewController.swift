@@ -35,23 +35,26 @@ class TravelMapViewController: UIViewController, MKMapViewDelegate {
     
     
     @IBAction func mapHeld(sender: UILongPressGestureRecognizer) {
+        if sender.state == UIGestureRecognizerState.Ended{
+            let point = sender.locationOfTouch(0, inView:mapView)
+            let coordinate = mapView.convertPoint(point, toCoordinateFromView: mapView)
+            let annotation = MKPointAnnotation()
+            annotation.coordinate = coordinate
+            //Add the point to the local DB First
+            let dictionary: [String:AnyObject] = [
+                Pin.Keys.Latitude : coordinate.latitude,
+                Pin.Keys.Longitude : coordinate.longitude,
+                Pin.Keys.Created : NSDate()
+            ]
+            let pin = Pin(dictionary: dictionary, context: sharedContext)
+            
+            CoreDataStackManager.sharedInstance().saveContext()
+            //Add the object id into the annotation
+            annotation.subtitle = pin.objectID.URIRepresentation().absoluteString
+            mapView.addAnnotation(annotation)
+            //Start loading the photos
+        }
         
-        let point = sender.locationOfTouch(0, inView:mapView)
-
-        let coordinate = mapView.convertPoint(point, toCoordinateFromView: mapView)
-        let annotation = MKPointAnnotation()
-        annotation.coordinate = coordinate
-        //Add the point to the local DB First
-        let dictionary: [String:AnyObject] = [
-            Pin.Keys.Latitude : coordinate.latitude,
-            Pin.Keys.Longitude : coordinate.longitude,
-            Pin.Keys.Created : NSDate()
-        ]
-        let pin = Pin(dictionary: dictionary, context: sharedContext)
-        CoreDataStackManager.sharedInstance().saveContext()
-        //Add the object id into the annotation
-        annotation.subtitle = pin.objectID.URIRepresentation().absoluteString
-        mapView.addAnnotation(annotation)
     }
     @IBOutlet var mapView: MKMapView!{
         didSet{
@@ -65,6 +68,7 @@ class TravelMapViewController: UIViewController, MKMapViewDelegate {
         notificationCenter.addObserver(self, selector: #selector(TravelMapProtocol.appToBackground), name: UIApplicationWillResignActiveNotification, object: nil)
         
         pins = indexPins()
+        print("The length of pins is \(pins.count)")
         addPinsToView()
     }
     
@@ -103,16 +107,12 @@ class TravelMapViewController: UIViewController, MKMapViewDelegate {
             let center = CLLocationCoordinate2D(latitude: savedLatitude, longitude: savedLongitude)
             let region = MKCoordinateRegion(center: center, span: span)
             mapView.setRegion(region, animated: true)
-            print("found a saved lat of : \(savedLatitude)")
-        }else{
-            print("Couldn't find anything")
         }
     }
     
     
     func appToBackground(){
         //GO ahead and remove notification and save data
-        print("Disappearing")
         saveMapData()
     }
     
@@ -124,7 +124,6 @@ class TravelMapViewController: UIViewController, MKMapViewDelegate {
         userDefaults.setValue(mapView.region.span.longitudeDelta, forKey: Constants.MapCenterLongDeltaKey)
         userDefaults.setValue(mapView.region.span.latitudeDelta, forKey: Constants.MapCenterLatDeltaKey)
         userDefaults.synchronize()
-        print("Saving the center as \(mapView.region.center.latitude)")
     }
     
     // MARK: MapViewDelegates 
@@ -148,6 +147,7 @@ class TravelMapViewController: UIViewController, MKMapViewDelegate {
     
     // This delegate method is implemented to respond to taps. It opens the system browser
     func mapView(mapView: MKMapView, didSelectAnnotationView view: MKAnnotationView) {
+        print("YOu selected a pin")
         if let absoluteString = view.annotation!.subtitle!{
             let url = NSURL(string: absoluteString)
             if url != nil{

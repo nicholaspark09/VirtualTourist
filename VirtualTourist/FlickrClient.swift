@@ -25,7 +25,7 @@ class FlickrClient: NSObject{
             }
             /* GUARD: Was there an error? */
             guard (error == nil) else{
-                sendError("There was an error with the request: \(error)")
+                sendError("There was an error with the request: \(error!.localizedDescription)")
                 return
             }
             /* GUARD: did we get a successful 2XX response? */

@@ -20,8 +20,9 @@ class Photo: NSManagedObject {
     @NSManaged var isfriend: NSNumber?
     @NSManaged var ispublic: NSNumber?
     @NSManaged var url_m: String?
-    @NSManaged var localDirectory: String?
     @NSManaged var album: PhotoAlbum?
+    @NSManaged var blob: NSData?
+    var photoImage: UIImage?
     
     struct Keys{
         static let Title = "title"
@@ -32,7 +33,7 @@ class Photo: NSManagedObject {
         static let IsFamily = "isfamily"
         static let IsPublic = "ispublic"
         static let IsFriend = "isfriend"
-        static let LocalDirectory = "localDirectory"
+        static let Blob = "blob"
     }
     
     override init(entity: NSEntityDescription, insertIntoManagedObjectContext context: NSManagedObjectContext?) {
@@ -56,17 +57,11 @@ class Photo: NSManagedObject {
         isfriend = dictionary[Keys.IsFriend] as? NSNumber
         ispublic = dictionary[Keys.IsPublic] as? NSNumber
         id = dictionary[Keys.ID] as? NSNumber
-        localDirectory = dictionary[Keys.LocalDirectory] as? String
+        blob = dictionary[Keys.Blob] as? NSData
+        if blob != nil{
+            photoImage = UIImage(data: blob!)
+        }
     }
 
-    var photoImage: UIImage? {
-        get{
-            return CoreDataStackManager.Caches.imageCache.imageWithIdentifier(localDirectory!)
-        }
-        set{
-            return CoreDataStackManager.Caches.imageCache.storeImage(newValue, withIdentifier: localDirectory!)
-            print("Saving into db with \(localDirectory!)")
-        }
-    }
 
 }

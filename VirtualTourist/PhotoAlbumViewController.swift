@@ -20,8 +20,13 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, UICollectio
     struct Constants{
         static let Title = "Photo Album"
         static let PhotoAlbumCell = "PhotoAlbum Cell"
+        static let AlertTitle = "Delete?"
+        static let AlertMessage = "Delete the photo from the album?"
+        static let AlertDelete = "Delete"
+        static let AlertCancel = "Cancel"
     }
     
+    // MARK: -IBOutlets
     @IBOutlet var collectionView: UICollectionView!{
         didSet{
             performOnMain(){
@@ -37,7 +42,15 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, UICollectio
             }
         }
     }
-
+    @IBOutlet var collectionViewFlowLayout: UICollectionViewFlowLayout!{
+        didSet{
+            collectionViewFlowLayout!.minimumInteritemSpacing = 0
+            collectionViewFlowLayout!.minimumLineSpacing = 0
+        }
+    }
+    @IBOutlet var newCollectionButton: UIButton!
+    
+    
     var objectID: NSManagedObjectID?
     var pin:Pin?
     
@@ -56,16 +69,6 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, UICollectio
     
     
     
-    func controllerWillChangeContent(controller: NSFetchedResultsController) {
-        // This invocation prepares the table to recieve a number of changes. It will store them up
-        // until it receives endUpdates(), and then perform them all at once.
-        collectionView.performBatchUpdates(nil, completion: nil)
-    }
-    
-    // When endUpdates() is invoked, the table makes the changes visible.
-    func controllerDidChangeContent(controller: NSFetchedResultsController) {
-        collectionView.setNeedsUpdateConstraints()
-    }
 
 
     override func viewDidLoad() {
@@ -77,17 +80,14 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, UICollectio
         if objectID != nil{
             do{
                 
-                let object = try CoreDataStackManager.sharedInstance().managedObjectContext.existingObjectWithID(objectID!)
-                pin = object as! Pin
-                
+                let objectpin = try CoreDataStackManager.sharedInstance().managedObjectContext.existingObjectWithID(objectID!) as! Pin
+                pin = objectpin
                 centerMap()
                 if pin!.photoAlbum == nil{
-                    print("Couldn't find an album")
                     createAlbum()
                 }else{
                     print("Found an album with name: \(pin!.photoAlbum!.title)")
                     if pin!.photoAlbum!.photos.count > 0{
-                        print("Found photos")
                         self.collectionView.reloadData()
                     }else{
                         pullPhotosFromFlickr()
@@ -114,8 +114,8 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, UICollectio
         self.saveContext()
         do{
             
-            let object = try CoreDataStackManager.sharedInstance().managedObjectContext.existingObjectWithID(objectID!)
-            pin = object as! Pin
+            let object = try CoreDataStackManager.sharedInstance().managedObjectContext.existingObjectWithID(objectID!) as! Pin
+            pin = object
         } catch {
             let nserror = error as NSError
             print("The error was \(nserror.localizedDescription)")
@@ -132,6 +132,7 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, UICollectio
     *
     */
     func pullPhotosFromFlickr(){
+        newCollectionButton.enabled = false
         FlickrClient.sharedInstance.findWithPin(pin!){(results,error) in
             if let error = error{
                 performOnMain(){
@@ -141,7 +142,6 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, UICollectio
                 if let photoDictionary = results![FlickrClient.JSONResponseKeys.Photo] as? [[String:AnyObject]] {
                     let _ = photoDictionary.map() { (dictionary: [String:AnyObject]) -> Photo in
                         let photo = Photo(dictionary: dictionary, context: self.sharedContext)
-                        photo.localDirectory = ""
                         photo.album = self.pin!.photoAlbum!
                         return photo
                     }
@@ -151,8 +151,8 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, UICollectio
                     print("YOu got them")
                     //Grab the pin again to refresh the photos
                     do{
-                        let object = try CoreDataStackManager.sharedInstance().managedObjectContext.existingObjectWithID(self.objectID!)
-                        self.pin = object as! Pin
+                        let object = try CoreDataStackManager.sharedInstance().managedObjectContext.existingObjectWithID(self.objectID!) as! Pin
+                        self.pin = object
                         self.collectionView.reloadData()
                     } catch {
                         let nserror = error as NSError
@@ -160,6 +160,9 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, UICollectio
                     }
                     
                 }
+            }
+            performOnMain(){
+                self.newCollectionButton.enabled = true
             }
         }
     }
@@ -204,16 +207,15 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, UICollectio
         let photo = pin!.photoAlbum!.photos[indexPath.row]
         // if an image exists at the url, set the image and title
         var placedImage = UIImage(named: "NoImage")
-        if photo.localDirectory != nil && photo.localDirectory != ""{
-            print("Found an image")
-            placedImage = photo.photoImage
+        if photo.photoImage != nil{
+            placedImage = photo.photoImage!
         }else if photo.url_m != nil{
             let imageURL = NSURL(string: photo.url_m!)
             FlickrClient.sharedInstance.taskForImageWithSize(imageURL!, filePath: photo.url_m!){(imageData,error) in
                 if let error = error{
                     print("Error: \(error)")
                 }else{
-                    photo.localDirectory = photo.url_m!
+                    photo.blob = imageData!
                     photo.photoImage = UIImage(data: imageData!)
                     performOnMain(){
                         placedImage = photo.photoImage
@@ -225,6 +227,21 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, UICollectio
         }
         cell.imageView.image = placedImage
         return cell
+    }
+    
+    func collectionView(collectionView: UICollectionView, didSelectItemAtIndexPath indexPath: NSIndexPath) {
+        let photo = pin!.photoAlbum!.photos[indexPath.row]
+        let deleteAlert = UIAlertController(title: Constants.AlertTitle, message: Constants.AlertMessage, preferredStyle: UIAlertControllerStyle.Alert)
+        deleteAlert.addAction(UIAlertAction(title: Constants.AlertDelete, style: .Default, handler: { (action: UIAlertAction!) in
+            print("Delete this things")
+            CoreDataStackManager.sharedInstance().managedObjectContext.deleteObject(photo as NSManagedObject)
+            self.saveContext()
+            self.collectionView.reloadData()
+        }))
+        deleteAlert.addAction(UIAlertAction(title: Constants.AlertCancel, style: .Cancel, handler: { (action: UIAlertAction!) in
+            print("You decided to cancel")
+        }))
+        presentViewController(deleteAlert, animated: true, completion: nil)
     }
     
     

@@ -30,6 +30,11 @@ extension FlickrClient{
                 return
             }
             
+            guard error == nil else{
+                sendError("\(error!.localizedDescription)")
+                return
+            }
+            
             /* GUARD: Did Flickr return an error (stat != ok)? */
             guard let stat = results[JSONResponseKeys.Status] as? String where stat == JSONResponseValues.OKStatus else {
                 sendError("Flickr API returned an error. See error code and message in \(results)")

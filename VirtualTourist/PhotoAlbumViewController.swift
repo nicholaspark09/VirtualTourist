@@ -275,6 +275,7 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, UICollectio
         if pin!.photoAlbum != nil{
             //Clear the cache of images first
             performOnMain(){
+                CoreDataStackManager.sharedInstance().managedObjectContext.deleteObject(self.pin!.photoAlbum! as NSManagedObject)
                 self.pin!.photoAlbum = nil
                 CoreDataStackManager.sharedInstance().saveContext()
                 self.createAlbum()

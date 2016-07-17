@@ -44,9 +44,7 @@ class PhotoViewController: UIViewController {
         deleteAlert.addAction(UIAlertAction(title: Constants.AlertDelete, style: .Default, handler: { (action: UIAlertAction!) in
             self.performSegueWithIdentifier(Constants.DeletePhotoSegue, sender: nil)
         }))
-        deleteAlert.addAction(UIAlertAction(title: Constants.AlertCancel, style: .Cancel, handler: { (action: UIAlertAction!) in
-            print("You decided to cancel")
-        }))
+        deleteAlert.addAction(UIAlertAction(title: Constants.AlertCancel, style: .Cancel, handler: nil))
         presentViewController(deleteAlert, animated: true, completion: nil)
     }
 
